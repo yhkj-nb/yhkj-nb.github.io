@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="force-rendering" content="webkit" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="云痕科技 - 专业的技术服务提供商">
+    <meta name="keywords" content="云痕科技,云计算,软件开发,技术服务">
+    <meta name="author" content="云痕科技">
+    <title>云痕科技引导页</title>
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <link rel="stylesheet" type="text/css" href="./css/iconfont.css">
+    <link rel="apple-touch-icon" href="./images/apple-touch-icon.png">
+    <link rel="icon" href="./favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.5/dist/sweetalert2.all.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/css/iziToast.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/izitoast@1.4.0/dist/js/iziToast.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/volantis-x/cdn-fontawesome-pro@master/css/all.min.css" media="all">
+    <script>if (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMode)) window.location.href = "https://imsyy.top/upgrade-your-browser/index.html?referrer=" + encodeURIComponent(window.location.href);</script>
+    
+    <style>
+        .company-sub {
+            font-size: 0.85em;
+            opacity: 0.85;
+            letter-spacing: 1px;
+        }
+        
+        .panel-cover__description {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        
+        .panel-cover {
+            background: url('https://api.yppp.net/api.php') center center no-repeat #666;
+            background-size: cover;
+            background-attachment: fixed;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .panel-main {
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* xf-MusicPlayer 播放器样式 - 固定在右下角 */
+        #xf-MusicPlayer {
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            z-index: 99999 !important;
+        }
+        
+        /* 确保播放器内部元素可点击 */
+        #xf-MusicPlayer * {
+            pointer-events: auto !important;
+        }
+        
+        .panel-cover--overlay {
+            z-index: 1;
+        }
+        
+        #fps {
+            z-index: 9999 !important;
+            position: fixed !important;
+        }
+    </style>
+</head>
+
+<body oncontextmenu="return false" onselectstart="return false" style="position: relative; overflow-x: hidden;">
+    <header id="panel" class="panel-cover">
+        <div class="panel-main">
+            <div class="panel-main__inner panel-inverted">
+                <div class="panel-main__content">
+                    <div class="ih-item circle effect right_to_left">
+                        <a class="blog-button">
+                            <div class="img">
+                                <img src="./images/logo.png" alt="云痕科技" class="js-avatar iUp profilepic">
+                            </div>
+                            <div class="info iUp">
+                                <div class="info-back">
+                                    <h2>云痕科技</h2>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <h1 class="panel-cover__title panel-title iUp">
+                        <br />云痕科技
+                    </h1>
+                    <p class="panel-cover__subtitle panel-subtitle iUp company-sub">欢迎访问云痕科技引导页</p>
+                    <hr class="panel-cover__divider iUp" />
+                    
+                    <p id="description" class="panel-cover__description iUp">
+                        专注于云计算、前端后端与技术服务
+                        <br />
+                        <strong>-「云痕科技」</strong>
+                    </p>
+                    
+                    <div class="navigation-wrapper iUp">
+                        <nav class="cover-navigation cover-navigation--primary">
+                            <ul class="navigation">
+                                <li class="navigation__item">
+                                    <a href="https://yhkj.ddns-ip.net/" target="_blank" class="blog-button">
+                                        <div>官网</div>
+                                    </a>
+                                </li>
+                                <li class="navigation__item">
+                                    <a href="https://yh-pay.cloud-ip.cc/" target="_blank" class="blog-button">
+                                        <div>云痕支付</div>
+                                    </a>
+                                </li>
+                                <li class="navigation__item">
+                                    <a href="https://yh-1.ddns-ip.net/" target="_blank" class="blog-button">
+                                        <div>云痕上网导航</div>
+                                    </a>
+                                </li>
+                                <li class="navigation__item">
+                                    <a href="http://m.webcats.cn/bx/123388/70223" target="_blank" class="blog-button">
+                                        <div>聚合导航页</div>
+                                    </a>
+                                </li>
+                                <li class="navigation__item">
+                                    <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=nSxIiYiZX8iG9E50T0AIVz2Mt7As9mBnFN86zrDCr%2B524giU%2FNgiqO6S2zKBXjtz&busi_data=eyJncm91cENvZGUiOiI5ODUzNzM1MjgiLCJ0b2tlbiI6Ik8xLzlhZUVyaERQK0xMOFlyTzBYVzRIRVRra012MXV1NlFXenlCWURtNmZMQ1k5bXMwZkhJem5ZR3g3Nmx6c3giLCJ1aW4iOiIzMDIxMjIwOTkwIn0%3D&data=e8hY5AvDMstWoOOKKi80LdfYgHXnj7TTzMR7_D5G75jCqKD3ltcmkhu2Tedddujogo7i1h3UPoofD9S03beQFw&svctype=4&tempid=h5_group_info" target="_blank" class="blog-button">
+                                        <div>QQ群</div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-cover--overlay cover-slate"></div>
+        </div>
+        
+        <div id="fps" style="z-index:9999;position:fixed;bottom:3px;left:3px;color:#2196F3;font-size:10px;"></div>
+    </header>
+    
+    <!-- xf-MusicPlayer 播放器 -->
+    <div id="xf-MusicPlayer" 
+         data-cdnName="https://player.xfyun.club/js"  
+         data-themeColor="xf-sky"
+         data-fadeOutAutoplay 
+         data-memory="1" 
+         data-random="true">
+    </div>
+    
+    <!-- xf-MusicPlayer 核心脚本 -->
+    <script src="https://player.xfyun.club/js/xf-MusicPlayer/js/xf-MusicPlayer.min.js"></script>
+    
+    <script>
+        // 确保播放器样式正确
+        setTimeout(function() {
+            var player = document.getElementById('xf-MusicPlayer');
+            if (player) {
+                player.style.position = 'fixed';
+                player.style.bottom = '20px';
+                player.style.right = '20px';
+                player.style.zIndex = '99999';
+            }
+        }, 100);
+        
+        iziToast.settings({
+            timeout: 4000,
+            icon: 'Fontawesome',
+            closeOnEscape: 'true',
+            position: 'topRight',
+            transitionOut: 'fadeOutRight',
+            displayMode: '2',
+            layout: '2',
+            transitionIn: 'bounceInLeft',
+        });
+        
+        function update() {
+            iziToast.info({
+                icon: 'fad fa-times-octagon',
+                backgroundColor: '#efefef',
+                title: '站点暂时关闭',
+                message: '只是出现了一点小问题 ~'
+            });
+        }
+    </script>
+    
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/fetch.min.js"></script>
+    <script type="text/javascript" src="./js/main.js"></script>
+</body>
+</html>
