@@ -30,7 +30,7 @@ var iUp = (function () {
 $(document).ready(function () {
 
 	// 获取一言数据
-	fetch('https://api.yhkj.ddns-ip.net/yiyan/').then(function (res) {
+	fetch('https://v1.hitokoto.cn/').then(function (res) {
 		return res.json();
 	}).then(function (e) {
 		$('#description').html(e.hitokoto + "<br/> -「<strong>" + e.from + "</strong>」")
