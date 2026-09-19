@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>页面不存在 | 云痕科技</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: #fafbfc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        /* 简约卡片容器 */
+        .error-card {
+            max-width: 560px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid #eef2f6;
+            transition: box-shadow 0.2s ease;
+        }
+
+        /* 状态码 - 极简大数字 */
+        .error-code {
+            font-size: 6rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #1a2c3e;
+            line-height: 1;
+            margin-bottom: 0.75rem;
+        }
+
+        /* 主标题 */
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #1e2f3e;
+            margin-bottom: 0.75rem;
+        }
+
+        /* 描述文字 */
+        .error-desc {
+            font-size: 0.95rem;
+            color: #5b6f82;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 分割细线 */
+        .divider {
+            width: 48px;
+            height: 2px;
+            background: #e2e8f0;
+            margin: 1rem auto 1.5rem auto;
+            border-radius: 2px;
+        }
+
+        /* 提示状态区块（停用提示） */
+        .status-badge {
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 0.3rem 0.9rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #3a5a78;
+            letter-spacing: 0.3px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 按钮组 - 极简风格 */
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.7rem 1.4rem;
+            border-radius: 48px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            background: transparent;
+            border: 1px solid #dce3ea;
+            color: #2c4b6e;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #1e2f3e;
+            border-color: #1e2f3e;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0f1e2c;
+            border-color: #0f1e2c;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        /* 底部品牌信息 - 极简 */
+        .footer-note {
+            margin-top: 2.5rem;
+            font-size: 0.7rem;
+            color: #99aec5;
+            border-top: 1px solid #eff3f8;
+            padding-top: 1.5rem;
+            letter-spacing: 0.2px;
+        }
+
+        .footer-note a {
+            color: #5c7f9c;
+            text-decoration: none;
+            border-bottom: 1px dotted #cbdde9;
+        }
+
+        .footer-note a:hover {
+            color: #1e2f3e;
+        }
+
+        /* 极简装饰（可选微小光感） */
+        @media (max-width: 480px) {
+            .error-card {
+                padding: 2rem 1.5rem;
+            }
+            .error-code {
+                font-size: 4.5rem;
+            }
+            .error-title {
+                font-size: 1.3rem;
+            }
+            .btn {
+                padding: 0.55rem 1.2rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <!-- 极简状态标识：明确网站停用或页面不存在 -->
+        <div class="status-badge">
+            <span>⚠️ 当前无法访问</span>
+        </div>
+
+        <!-- 404 核心视觉 -->
+        <div class="error-code">404</div>
+        <div class="error-title">页面不存在</div>
+        <div class="divider"></div>
+        <div class="error-desc">
+            您访问的页面已停用、地址有误或资源已被移除。<br>
+            云痕科技服务调整中，感谢您的理解。
+        </div>
+
+        <!-- 操作选项：简约且实用 -->
+        <div class="actions">
+            <a href="/" class="btn btn-primary">
+                <span>←</span> 返回首页
+            </a>
+            <a href="javascript:history.back()" class="btn btn-outline">
+                <span>↺</span> 返回上一页
+            </a>
+        </div>
+
+        <!-- 极简底部信息，强调云痕科技与停用说明 -->
+        <div class="footer-note">
+            © 云痕科技 · 服务状态更新中<br>
+            如有疑问请通过官方渠道联系
+        </div>
+    </div>
+</body>
+</html>
