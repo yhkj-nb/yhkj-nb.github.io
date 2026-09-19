@@ -45,19 +45,6 @@
             z-index: 2;
         }
         
-        /* xf-MusicPlayer 播放器样式 - 固定在右下角 */
-        #xf-MusicPlayer {
-            position: fixed !important;
-            bottom: 20px !important;
-            right: 20px !important;
-            z-index: 99999 !important;
-        }
-        
-        /* 确保播放器内部元素可点击 */
-        #xf-MusicPlayer * {
-            pointer-events: auto !important;
-        }
-        
         .panel-cover--overlay {
             z-index: 1;
         }
@@ -138,30 +125,12 @@
         <div id="fps" style="z-index:9999;position:fixed;bottom:3px;left:3px;color:#2196F3;font-size:10px;"></div>
     </header>
     
-    <!-- xf-MusicPlayer 播放器 -->
-    <div id="xf-MusicPlayer" 
-         data-cdnName="https://player.xfyun.club/js"  
-         data-themeColor="xf-sky"
-         data-fadeOutAutoplay 
-         data-memory="1" 
-         data-random="true">
-    </div>
-    
-    <!-- xf-MusicPlayer 核心脚本 -->
-    <script src="https://player.xfyun.club/js/xf-MusicPlayer/js/xf-MusicPlayer.min.js"></script>
-    
+    <!-- 云痕音乐播放器（新）：本地托管脚本 + 注入元素，默认展开 -->
+    <script src="./js/console-filter.js"></script>
+    <script src="./js/music-player.min.js"></script>
+    <script src="./js/cloud-music-player.js"></script>
+
     <script>
-        // 确保播放器样式正确
-        setTimeout(function() {
-            var player = document.getElementById('xf-MusicPlayer');
-            if (player) {
-                player.style.position = 'fixed';
-                player.style.bottom = '20px';
-                player.style.right = '20px';
-                player.style.zIndex = '99999';
-            }
-        }, 100);
-        
         iziToast.settings({
             timeout: 4000,
             icon: 'Fontawesome',
