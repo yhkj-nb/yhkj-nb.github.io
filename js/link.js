@@ -5,11 +5,16 @@
  *   {
  *     "siteName" : "云痕科技",
  *     "logo"     : "./images/logo.png",
- *     "trusted"  : ["白名单域名，直接跳转"],
- *     "blacklist": ["黑名单域名，禁止访问"]
+ *     "whitelist": [ { "host": "yhkj.ddns-ip.net", "name": "云痕主站" } ],
+ *     "blacklist": [ { "host": "bad-example.com", "name": "测试黑名单站点" } ]
  *   }
  * 修改名单只需改 link.json，无需动本文件。
  * （若 JSON 拉取失败，则回退到本文件内嵌的 DEFAULTS）
+ *
+ * 三种拦截模式：
+ *  1) 白名单（我的网站）：  不直接放行，仍询问用户是否跳转
+ *  2) 黑名单（禁止访问）：  禁止跳转，只能返回
+ *  3) 其他外链（未知站点）：提示“你将离开云痕科技”，询问是否继续
  */
 (function () {
     'use strict';
@@ -18,19 +23,21 @@
     var DEFAULTS = {
         siteName: '云痕科技',
         logo: './images/logo.png',
-        trusted: [
-            'yhkj.ddns-ip.net',
-            'yh.yhkj.ddns-ip.net',
-            'api.yhkj.ddns-ip.net'
+        whitelist: [
+            { host: 'yhkj.ddns-ip.net', name: '云痕主站' },
+            { host: 'yh.yhkj.ddns-ip.net', name: '云痕导航' },
+            { host: 'api.yhkj.ddns-ip.net', name: '云痕接口' }
         ],
-        blacklist: []
+        blacklist: [
+            { host: 'bad-example.com', name: '测试黑名单站点' }
+        ]
     };
 
     /* 运行时配置（先填兜底值，拉到 JSON 后覆盖） */
     var CONFIG = {
         siteName: DEFAULTS.siteName,
         logo: DEFAULTS.logo,
-        trusted: DEFAULTS.trusted.slice(),
+        whitelist: DEFAULTS.whitelist.slice(),
         blacklist: DEFAULTS.blacklist.slice()
     };
 
@@ -42,14 +49,21 @@
             .then(function (cfg) {
                 if (cfg.siteName) CONFIG.siteName = cfg.siteName;
                 if (cfg.logo) CONFIG.logo = cfg.logo;
-                if (Array.isArray(cfg.trusted)) CONFIG.trusted = cfg.trusted;
+                if (Array.isArray(cfg.whitelist)) CONFIG.whitelist = cfg.whitelist;
                 if (Array.isArray(cfg.blacklist)) CONFIG.blacklist = cfg.blacklist;
             })
             .catch(function () { /* 用兜底值即可 */ });
     })();
 
-    function inList(host, list) {
-        return list.some(function (d) { return host === d || host.slice(-d.length - 1) === '.' + d; });
+    /* 在名单中匹配域名（支持子域），返回匹配到的条目对象（含 name），否则 null */
+    function matchEntry(host, list) {
+        for (var i = 0; i < list.length; i++) {
+            var d = list[i];
+            var base = typeof d === 'string' ? d : d.host;
+            if (!base) continue;
+            if (host === base || host.slice(-base.length - 1) === '.' + base) return d;
+        }
+        return null;
     }
 
     /* ---------- 样式 ---------- */
@@ -83,32 +97,20 @@
             + '<div class="yk-text">' + opts.text + '</div>'
             + '<div class="yk-btns">' + opts.buttons + '</div></div>';
         document.body.appendChild(mask);
-        mask.addEventListener('click', function (e) {
-            if (e.target === mask && opts.dismissable) mask.remove();
-        });
+        if (opts.dismissable) {
+            mask.addEventListener('click', function (e) {
+                if (e.target === mask) mask.remove();
+            });
+        }
         return mask;
     }
 
-    /* 情形 1：黑名单 → 拒绝访问，只能返回 */
-    function showBlock(url) {
+    /* ---------- 询问是否跳转（白名单 / 其他外链共用） ---------- */
+    function showConfirm(url, opts) {
         var mask = buildCard({
-            danger: true,
-            title: '拒绝访问',
-            text: '该网站在 ' + CONFIG.siteName + ' 黑名单中，已禁止访问<br>'
-                + '<span class="yk-host">' + url.hostname + '</span>',
-            buttons: '<button class="yk-btn back">返 回</button>',
-            dismissable: false
-        });
-        mask.querySelector('.yk-btn.back').addEventListener('click', function () { mask.remove(); });
-    }
-
-    /* 情形 2：普通外链 → 你将离开确认页 */
-    function showWarn(url) {
-        var mask = buildCard({
-            title: '你将离开 ' + CONFIG.siteName,
-            text: '该链接未经 ' + CONFIG.siteName + ' 安全验证<br>'
-                + '即将前往：<span class="yk-host">' + url.hostname + '</span><br>'
-                + '请注意你的账号与财产安全',
+            danger: false,
+            title: opts.title,
+            text: opts.text,
             buttons: '<button class="yk-btn back">返 回</button><button class="yk-btn go">继续访问</button>',
             dismissable: true
         });
@@ -117,6 +119,41 @@
             window.open(url.href, '_blank', 'noopener');
             mask.remove();
         });
+    }
+
+    /* 情形 1：白名单（我的网站）—— 仍询问是否跳转 */
+    function showTrusted(url, entry) {
+        var name = (entry && entry.name) ? entry.name : url.hostname;
+        showConfirm(url, {
+            title: '前往我的网站',
+            text: '您即将前往 ' + CONFIG.siteName + ' 的<br>'
+                + '<span class="yk-host">' + name + '（' + url.hostname + '）</span><br>'
+                + '是否继续跳转？'
+        });
+    }
+
+    /* 情形 3：其他外链 —— 你将离开 */
+    function showWarn(url) {
+        showConfirm(url, {
+            title: '你将离开 ' + CONFIG.siteName,
+            text: '该链接未经 ' + CONFIG.siteName + ' 安全验证<br>'
+                + '即将前往：<span class="yk-host">' + url.hostname + '</span><br>'
+                + '请注意你的账号与财产安全'
+        });
+    }
+
+    /* 情形 2：黑名单 —— 拒绝访问，只能返回 */
+    function showBlock(url, entry) {
+        var name = (entry && entry.name) ? entry.name : url.hostname;
+        var mask = buildCard({
+            danger: true,
+            title: '拒绝访问',
+            text: '<span class="yk-host">' + name + '（' + url.hostname + '）</span><br>'
+                + '已被 ' + CONFIG.siteName + ' 列入黑名单<br>已禁止跳转，您只能返回',
+            buttons: '<button class="yk-btn back">返 回</button>',
+            dismissable: false
+        });
+        mask.querySelector('.yk-btn.back').addEventListener('click', function () { mask.remove(); });
     }
 
     /* ---------- 拦截点击（捕获阶段，确保先于页面自身逻辑） ---------- */
@@ -128,10 +165,10 @@
         var url;
         try { url = new URL(href, location.href); } catch (err) { return; }
         if (url.hostname === location.hostname) return;      /* 站内链接直接放行 */
-        if (inList(url.hostname, CONFIG.trusted)) return;    /* 白名单直接放行 */
-        e.preventDefault();
-        e.stopPropagation();
-        if (inList(url.hostname, CONFIG.blacklist)) showBlock(url);
-        else showWarn(url);
+        var blk = matchEntry(url.hostname, CONFIG.blacklist);
+        if (blk) { e.preventDefault(); e.stopPropagation(); showBlock(url, blk); return; }
+        var wlt = matchEntry(url.hostname, CONFIG.whitelist);
+        if (wlt) { e.preventDefault(); e.stopPropagation(); showTrusted(url, wlt); return; }
+        e.preventDefault(); e.stopPropagation(); showWarn(url);
     }, true);
 })();
