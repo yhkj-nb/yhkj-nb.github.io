@@ -1,0 +1,10 @@
+{
+  "siteName": "云痕科技",
+  "logo": "./images/logo.png",
+  "trusted": [
+    "yhkj.ddns-ip.net",
+    "yh.yhkj.ddns-ip.net",
+    "api.yhkj.ddns-ip.net"
+  ],
+  "blacklist": []
+}
