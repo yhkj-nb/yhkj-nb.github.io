@@ -11,10 +11,10 @@
  * 修改名单只需改 link.json，无需动本文件。
  * （若 JSON 拉取失败，则回退到本文件内嵌的 DEFAULTS）
  *
- * 三种拦截模式：
- *  1) 白名单（我的网站）：  不直接放行，仍询问用户是否跳转
- *  2) 黑名单（禁止访问）：  禁止跳转，只能返回
- *  3) 其他外链（未知站点）：提示“你将离开云痕科技”，询问是否继续
+ * 三种拦截模式（按命中优先级）：
+ *  1) 白名单（我的官方网站）：不直接放行，弹窗询问用户是否跳转
+ *  2) 其他链接（非白非黑）  ：提示“你将离开云痕科技”，询问是否继续
+ *  3) 黑名单（禁止访问）    ：禁止跳转，只能返回
  */
 (function () {
     'use strict';
@@ -121,18 +121,18 @@
         });
     }
 
-    /* 情形 1：白名单（我的网站）—— 仍询问是否跳转 */
+    /* 模式 1：白名单（我的官方网站）—— 弹窗询问是否跳转 */
     function showTrusted(url, entry) {
         var name = (entry && entry.name) ? entry.name : url.hostname;
         showConfirm(url, {
-            title: '前往我的网站',
-            text: '您即将前往 ' + CONFIG.siteName + ' 的<br>'
+            title: '前往官方网站',
+            text: '您即将前往 ' + CONFIG.siteName + ' 的官方网站<br>'
                 + '<span class="yk-host">' + name + '（' + url.hostname + '）</span><br>'
                 + '是否继续跳转？'
         });
     }
 
-    /* 情形 3：其他外链 —— 你将离开 */
+    /* 模式 2：其他外链（非白非黑）—— 你将离开 */
     function showWarn(url) {
         showConfirm(url, {
             title: '你将离开 ' + CONFIG.siteName,
@@ -142,7 +142,7 @@
         });
     }
 
-    /* 情形 2：黑名单 —— 拒绝访问，只能返回 */
+    /* 模式 3：黑名单 —— 拒绝访问，只能返回 */
     function showBlock(url, entry) {
         var name = (entry && entry.name) ? entry.name : url.hostname;
         var mask = buildCard({
@@ -165,10 +165,10 @@
         var url;
         try { url = new URL(href, location.href); } catch (err) { return; }
         if (url.hostname === location.hostname) return;      /* 站内链接直接放行 */
-        var blk = matchEntry(url.hostname, CONFIG.blacklist);
+        var blk = matchEntry(url.hostname, CONFIG.blacklist);   /* 先查黑名单（模式 3） */
         if (blk) { e.preventDefault(); e.stopPropagation(); showBlock(url, blk); return; }
-        var wlt = matchEntry(url.hostname, CONFIG.whitelist);
+        var wlt = matchEntry(url.hostname, CONFIG.whitelist);   /* 再查白名单（模式 1） */
         if (wlt) { e.preventDefault(); e.stopPropagation(); showTrusted(url, wlt); return; }
-        e.preventDefault(); e.stopPropagation(); showWarn(url);
+        e.preventDefault(); e.stopPropagation(); showWarn(url);  /* 其余为模式 2 */
     }, true);
 })();
