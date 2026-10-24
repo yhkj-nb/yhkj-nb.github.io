@@ -1,10 +1,12 @@
 {
   "siteName": "云痕科技",
   "logo": "./images/logo.png",
-  "trusted": [
-    "yhkj.ddns-ip.net",
-    "yh.yhkj.ddns-ip.net",
-    "api.yhkj.ddns-ip.net"
+  "whitelist": [
+    { "host": "yhkj.ddns-ip.net", "name": "云痕主站" },
+    { "host": "yh.yhkj.ddns-ip.net", "name": "云痕导航" },
+    { "host": "api.yhkj.ddns-ip.net", "name": "云痕接口" }
   ],
-  "blacklist": []
+  "blacklist": [
+    { "host": "bad-example.com", "name": "测试黑名单站点" }
+  ]
 }
