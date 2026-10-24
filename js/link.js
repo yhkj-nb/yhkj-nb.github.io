@@ -1,33 +1,52 @@
 /**
  * link.js —— 云痕科技外链拦截跳转
  * ---------------------------------------------
- * 功能：
- *  1. 拦截页面上所有指向外部网站的链接点击
- *  2. 可信域名（白名单）→ 直接跳转，不打扰
- *  3. 黑名单域名 → 显示「拒绝访问」页，禁止跳转，只能返回
- *  4. 其他外部链接 → 显示「你将离开 云痕科技」确认页，
- *     用户点击「继续访问」后才会真正跳转
- *
- * 配置：直接改下面的 TRUSTED / BLACKLIST 两个数组即可。
+ * 配置单独存放在 ./js/link.json：
+ *   {
+ *     "siteName" : "云痕科技",
+ *     "logo"     : "./images/logo.png",
+ *     "trusted"  : ["白名单域名，直接跳转"],
+ *     "blacklist": ["黑名单域名，禁止访问"]
+ *   }
+ * 修改名单只需改 link.json，无需动本文件。
+ * （若 JSON 拉取失败，则回退到本文件内嵌的 DEFAULTS）
  */
 (function () {
     'use strict';
 
-    /* ================== 配置区 ================== */
-    /* 白名单：这些域名直接跳转，不弹确认页 */
-    var TRUSTED = [
-        'yhkj.ddns-ip.net',
-        'yh.yhkj.ddns-ip.net',
-        'api.yhkj.ddns-ip.net'
-    ];
-    /* 黑名单：这些域名禁止访问 */
-    var BLACKLIST = [
-        /* 在这里添加禁止访问的域名，例如：'bad-site.example.com' */
-    ];
-    /* 站点名称与 Logo */
-    var SITE_NAME = '云痕科技';
-    var LOGO = './images/logo.png';
-    /* ============================================ */
+    /* ================== 内嵌兜底（JSON 拉取失败时使用） ================== */
+    var DEFAULTS = {
+        siteName: '云痕科技',
+        logo: './images/logo.png',
+        trusted: [
+            'yhkj.ddns-ip.net',
+            'yh.yhkj.ddns-ip.net',
+            'api.yhkj.ddns-ip.net'
+        ],
+        blacklist: []
+    };
+
+    /* 运行时配置（先填兜底值，拉到 JSON 后覆盖） */
+    var CONFIG = {
+        siteName: DEFAULTS.siteName,
+        logo: DEFAULTS.logo,
+        trusted: DEFAULTS.trusted.slice(),
+        blacklist: DEFAULTS.blacklist.slice()
+    };
+
+    /* 异步拉取 JSON 配置 */
+    (function loadConfig() {
+        if (!window.fetch) return;
+        fetch('./js/link.json', { cache: 'no-cache' })
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+            .then(function (cfg) {
+                if (cfg.siteName) CONFIG.siteName = cfg.siteName;
+                if (cfg.logo) CONFIG.logo = cfg.logo;
+                if (Array.isArray(cfg.trusted)) CONFIG.trusted = cfg.trusted;
+                if (Array.isArray(cfg.blacklist)) CONFIG.blacklist = cfg.blacklist;
+            })
+            .catch(function () { /* 用兜底值即可 */ });
+    })();
 
     function inList(host, list) {
         return list.some(function (d) { return host === d || host.slice(-d.length - 1) === '.' + d; });
@@ -59,12 +78,11 @@
         var mask = document.createElement('div');
         mask.className = 'yk-mask';
         mask.innerHTML = '<div class="yk-card">'
-            + '<img class="yk-logo" src="' + LOGO + '" alt="logo">'
+            + '<img class="yk-logo" src="' + CONFIG.logo + '" alt="logo">'
             + '<div class="yk-title' + (opts.danger ? ' danger' : '') + '">' + opts.title + '</div>'
             + '<div class="yk-text">' + opts.text + '</div>'
             + '<div class="yk-btns">' + opts.buttons + '</div></div>';
         document.body.appendChild(mask);
-        /* 点遮罩空白处关闭（仅确认页允许） */
         mask.addEventListener('click', function (e) {
             if (e.target === mask && opts.dismissable) mask.remove();
         });
@@ -76,7 +94,7 @@
         var mask = buildCard({
             danger: true,
             title: '拒绝访问',
-            text: '该网站在 ' + SITE_NAME + ' 黑名单中，已禁止访问<br>'
+            text: '该网站在 ' + CONFIG.siteName + ' 黑名单中，已禁止访问<br>'
                 + '<span class="yk-host">' + url.hostname + '</span>',
             buttons: '<button class="yk-btn back">返 回</button>',
             dismissable: false
@@ -87,8 +105,8 @@
     /* 情形 2：普通外链 → 你将离开确认页 */
     function showWarn(url) {
         var mask = buildCard({
-            title: '你将离开 ' + SITE_NAME,
-            text: '该链接未经 ' + SITE_NAME + ' 安全验证<br>'
+            title: '你将离开 ' + CONFIG.siteName,
+            text: '该链接未经 ' + CONFIG.siteName + ' 安全验证<br>'
                 + '即将前往：<span class="yk-host">' + url.hostname + '</span><br>'
                 + '请注意你的账号与财产安全',
             buttons: '<button class="yk-btn back">返 回</button><button class="yk-btn go">继续访问</button>',
@@ -110,10 +128,10 @@
         var url;
         try { url = new URL(href, location.href); } catch (err) { return; }
         if (url.hostname === location.hostname) return;      /* 站内链接直接放行 */
-        if (inList(url.hostname, TRUSTED)) return;           /* 白名单直接放行 */
+        if (inList(url.hostname, CONFIG.trusted)) return;    /* 白名单直接放行 */
         e.preventDefault();
         e.stopPropagation();
-        if (inList(url.hostname, BLACKLIST)) showBlock(url);
+        if (inList(url.hostname, CONFIG.blacklist)) showBlock(url);
         else showWarn(url);
     }, true);
 })();
