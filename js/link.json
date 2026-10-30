@@ -3,7 +3,7 @@
   "logo": "./images/logo.png",
   "whitelist": [
     { "host": "yhkj.ddns-ip.net", "name": "云痕主站" },
-    { "host": "yh-1.de5.net", "name": "云痕导航" },
+    { "host": "yh.yhkj.ddns-ip.net", "name": "云痕导航" },
     { "host": "api.yhkj.ddns-ip.net", "name": "云痕接口" }
   ],
   "blacklist": [
