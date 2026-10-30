@@ -11,8 +11,15 @@
  * 修改名单只需改 link.json，无需动本文件。
  * （若 JSON 拉取失败，则回退到本文件内嵌的 DEFAULTS）
  *
- * 三种拦截模式（按命中优先级）：
- *  1) 白名单（我的官方网站）：不直接放行，弹窗询问用户是否跳转
+ * 拦截范围：凡是跳转到“非本站域名”的入口都会被拦截，包括
+ *   - <a> 链接点击
+ *   - window.open(...) 脚本跳转
+ *   - location.assign(...) / location.replace(...) 脚本跳转
+ *   - <form> 提交到外部地址
+ * 只要目标域名不是本站，统一走下面的三种处理。
+ *
+ * 三种处理方式（按命中优先级）：
+ *  1) 白名单（我的官方网站）：不直接放行，弹窗询问是否跳转
  *  2) 其他链接（非白非黑）  ：提示“你将离开云痕科技”，询问是否继续
  *  3) 黑名单（禁止访问）    ：禁止跳转，只能返回
  */
@@ -66,6 +73,16 @@
         return null;
     }
 
+    /* 统一判定：返回 { type, entry } */
+    function classify(url) {
+        if (url.hostname === location.hostname) return { type: 'allow' };
+        var blk = matchEntry(url.hostname, CONFIG.blacklist);
+        if (blk) return { type: 'block', entry: blk };
+        var wlt = matchEntry(url.hostname, CONFIG.whitelist);
+        if (wlt) return { type: 'trusted', entry: wlt };
+        return { type: 'warn' };
+    }
+
     /* ---------- 样式 ---------- */
     var css = ''
         + '.yk-mask{position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);'
@@ -87,6 +104,9 @@
     style.textContent = css;
     document.head.appendChild(style);
 
+    /* 原始 open 引用，所有“真正放行”的导航都走它，避免递归触发包装 */
+    var _open = window.open;
+
     /* ---------- 弹层构建 ---------- */
     function buildCard(opts) {
         var mask = document.createElement('div');
@@ -105,8 +125,12 @@
         return mask;
     }
 
-    /* ---------- 询问是否跳转（白名单 / 其他外链共用） ---------- */
-    function showConfirm(url, opts) {
+    /* 默认“真正跳转”方式：新标签打开 */
+    function nav(u) { _open.call(window, u.href, '_blank', 'noopener'); }
+
+    /* 询问是否跳转（白名单 / 其他外链共用），onGo 为确认后真正执行导航的回调 */
+    function showConfirm(url, opts, onGo) {
+        var go = (typeof onGo === 'function') ? onGo : nav;
         var mask = buildCard({
             danger: false,
             title: opts.title,
@@ -115,31 +139,28 @@
             dismissable: true
         });
         mask.querySelector('.yk-btn.back').addEventListener('click', function () { mask.remove(); });
-        mask.querySelector('.yk-btn.go').addEventListener('click', function () {
-            window.open(url.href, '_blank', 'noopener');
-            mask.remove();
-        });
+        mask.querySelector('.yk-btn.go').addEventListener('click', function () { mask.remove(); go(); });
     }
 
     /* 模式 1：白名单（我的官方网站）—— 弹窗询问是否跳转 */
-    function showTrusted(url, entry) {
+    function showTrusted(url, entry, onGo) {
         var name = (entry && entry.name) ? entry.name : url.hostname;
         showConfirm(url, {
             title: '前往官方网站',
             text: '您即将前往 ' + CONFIG.siteName + ' 的官方网站<br>'
                 + '<span class="yk-host">' + name + '（' + url.hostname + '）</span><br>'
                 + '是否继续跳转？'
-        });
+        }, onGo);
     }
 
     /* 模式 2：其他外链（非白非黑）—— 你将离开 */
-    function showWarn(url) {
+    function showWarn(url, onGo) {
         showConfirm(url, {
             title: '你将离开 ' + CONFIG.siteName,
             text: '该链接未经 ' + CONFIG.siteName + ' 安全验证<br>'
                 + '即将前往：<span class="yk-host">' + url.hostname + '</span><br>'
                 + '请注意你的账号与财产安全'
-        });
+        }, onGo);
     }
 
     /* 模式 3：黑名单 —— 拒绝访问，只能返回 */
@@ -156,19 +177,75 @@
         mask.querySelector('.yk-btn.back').addEventListener('click', function () { mask.remove(); });
     }
 
-    /* ---------- 拦截点击（捕获阶段，确保先于页面自身逻辑） ---------- */
+    /* 统一处理：拦截后按类型弹窗；onGo 为“确认后真正导航”的回调（默认新标签打开） */
+    function handle(url, onGo) {
+        var c = classify(url);
+        if (c.type === 'allow') return true;
+        if (c.type === 'block') { showBlock(url, c.entry); return false; }
+        if (c.type === 'trusted') { showTrusted(url, c.entry, onGo); return false; }
+        showWarn(url, onGo); return false;
+    }
+
+    /* 安全解析 URL */
+    function parseUrl(href) {
+        try { return new URL(href, location.href); } catch (e) { return null; }
+    }
+
+    /* ---------- 入口 1：<a> 链接点击 ---------- */
     document.addEventListener('click', function (e) {
         var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
         if (!a) return;
         var href = a.getAttribute('href');
         if (!href || href.charAt(0) === '#' || /^(javascript|mailto|tel):/i.test(href)) return;
-        var url;
-        try { url = new URL(href, location.href); } catch (err) { return; }
-        if (url.hostname === location.hostname) return;      /* 站内链接直接放行 */
-        var blk = matchEntry(url.hostname, CONFIG.blacklist);   /* 先查黑名单（模式 3） */
-        if (blk) { e.preventDefault(); e.stopPropagation(); showBlock(url, blk); return; }
-        var wlt = matchEntry(url.hostname, CONFIG.whitelist);   /* 再查白名单（模式 1） */
-        if (wlt) { e.preventDefault(); e.stopPropagation(); showTrusted(url, wlt); return; }
-        e.preventDefault(); e.stopPropagation(); showWarn(url);  /* 其余为模式 2 */
+        var url = parseUrl(href);
+        if (!url) return;
+        if (classify(url).type === 'allow') return;   /* 站内链接直接放行 */
+        e.preventDefault();
+        e.stopPropagation();
+        handle(url);
+    }, true);
+
+    /* ---------- 入口 2：window.open(...) 脚本跳转 ---------- */
+    if (typeof _open === 'function') {
+        try {
+            window.open = function (url, name, specs, replace) {
+                if (typeof url !== 'string') return _open.apply(window, arguments);
+                var u = parseUrl(url);
+                if (!u) return _open.apply(window, arguments);
+                if (classify(u).type === 'allow') return _open.apply(window, arguments);
+                var args = arguments;
+                handle(u, function () { _open.apply(window, args); });
+                return null;
+            };
+        } catch (e) { /* 浏览器不允许覆盖则忽略，仍保留点击拦截 */ }
+    }
+
+    /* ---------- 入口 3：location.assign / location.replace 脚本跳转 ---------- */
+    ['assign', 'replace'].forEach(function (m) {
+        if (typeof window.location[m] !== 'function') return;
+        var orig = window.location[m].bind(window.location);
+        try {
+            window.location[m] = function (url) {
+                var u = parseUrl(url);
+                if (!u) return orig.apply(null, arguments);
+                if (classify(u).type === 'allow') return orig.apply(null, arguments);
+                var args = arguments;
+                handle(u, function () { orig.apply(null, args); });
+            };
+        } catch (e) { /* 忽略 */ }
+    });
+
+    /* ---------- 入口 4：<form> 提交到外部地址 ---------- */
+    document.addEventListener('submit', function (e) {
+        var t = e.target;
+        if (!t || !t.tagName || t.tagName.toLowerCase() !== 'form') return;
+        var action = t.getAttribute('action');
+        if (!action) return;
+        var u = parseUrl(action);
+        if (!u) return;
+        if (classify(u).type === 'allow') return;
+        e.preventDefault();
+        e.stopPropagation();
+        handle(u);
     }, true);
 })();
