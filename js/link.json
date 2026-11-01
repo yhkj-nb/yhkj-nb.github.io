@@ -4,7 +4,9 @@
   "whitelist": [
     { "host": "yhkj.ddns-ip.net", "name": "云痕主站" },
     { "host": "yh.yhkj.ddns-ip.net", "name": "云痕导航" },
-    { "host": "api.yhkj.ddns-ip.net", "name": "云痕接口" }
+    { "host": "api.yhkj.ddns-ip.net", "name": "云痕接口" },
+    { "host": "yh-1.ddns-ip.net", "name": "云痕分站" },
+    { "host": "yh-pay.cloud-ip.cc", "name": "云痕支付" }
   ],
   "blacklist": [
     { "host": "bad-example.com", "name": "测试黑名单站点" }
